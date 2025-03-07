@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FINITE | The rarest digital assets</title>
+  <link rel="icon" type="image/x-icon" href="fav.png">
+  <meta property="og:image" content="share.png" />
+  <script src="https://kit.fontawesome.com/edbc9f0e08.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+  <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+  <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@v0.163.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@v0.163.0/examples/jsm/"
+        }
+      }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/solana-web3.js/1.30.0/solana-web3.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- Header -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <div class="logo">𐍆𐌹𐌽𐌹𐍄𐌴<sup>®</sup></div>
+      <div class="menu-btn" id="menu-btn">
+        <i class="fa-solid fa-bars"></i>
+      </div>
+      <div class="nav-menu" id="nav-menu">
+        <a href="#" id="connectbutton">Connect</a>
+        <a href="#" class="login"><img src="dex.png" class="dex" alt="dex">6LkA...i8Fh</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="three-container" class="three-container">
+    <model-viewer src="genesis.glb" scene-viewer quick-look" camera-controls tone-mapping="agx" poster="poster.webp" shadow-intensity="1.23" exposure="2" shadow-softness="1" auto-rotate autoplay> </model-viewer>
+  </div>
+
+  <div class="main-search-container">
+    <div class="search-container">
+      <div class="search-box">
+        <div class="search-box-input">
+          <div class="search-icon">
+            <i class="fa-solid fa-gem"></i>
+          </div>
+          <div class="loader">
+            <div class="loader_item loader_item_neon"></div>
+            <div class="loader_item loader_item_glowing"></div>
+            <span class="char-count">Genesis</span>
+          </div>
+        </div>
+        <button class="submit-button" disabled>Claim</button>
+      </div>
+    </div>
+  </div>
+
+<footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="#" aria-label="Twitter">
+          <i class="fa-brands fa-x-twitter" aria-hidden="true"></i>
+          <span>Twitter</span>
+        </a>
+        <a href="#" aria-label="Telegram">
+          <i class="fa-brands fa-telegram" aria-hidden="true"></i>
+          <span>Telegram</span>
+        </a>
+        <button class="modal__button" id="open-modal">
+          <i class="fa-solid fa-file" aria-hidden="true"></i>
+          <span>Docs</span>
+        </button>
+      </div>
+      <div class="footer-credits">
+        Building with <img src="sol.png" class="sol" alt="sol"> | <span id="current-year">2025</span> FINITE
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const connectButton = document.getElementById('connectbutton');
+      let publicKey = null;
+    
+      async function connectWallet() {
+        try {
+          const response = await window.solana.connect();
+          publicKey = response.publicKey.toString();
+          const shortenedAddress = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+          connectButton.textContent = shortenedAddress;
+          Swal.fire({
+            title: 'Connected!',
+            text: 'Wallet connected successfully.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+          });
+        } catch (err) {
+          console.error('Error connecting to wallet:', err);
+          Swal.fire({
+            title: 'Error!',
+            text: 'Error connecting to wallet: ' + err.message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        }
+      }
+    
+      function disconnectWallet() {
+        publicKey = null;
+        connectButton.textContent = 'Connect';
+        Swal.fire({
+          title: 'Disconnected!',
+          text: 'Wallet disconnected successfully.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+      }
+    
+      function isMobile() {
+        return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      }
+    
+      if (window.solana && window.solana.isPhantom) {
+        connectButton.addEventListener('click', async () => {
+          if (!publicKey) {
+            await connectWallet();
+          } else {
+            disconnectWallet();
+          }
+        });
+    
+        connectButton.addEventListener('mouseover', () => {
+          if (publicKey) {
+            connectButton.textContent = 'Disconnect';
+          }
+        });
+    
+        connectButton.addEventListener('mouseout', () => {
+          if (publicKey) {
+            const shortenedAddress = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+            connectButton.textContent = shortenedAddress;
+          }
+        });
+      } else if (isMobile()) {
+        Swal.fire({
+          title: 'Phantom Wallet Not Detected',
+          text: 'Please open this site in the Phantom wallet browser.',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+      } else {
+        Swal.fire({
+          title: 'Phantom Wallet Not Found',
+          text: 'Please install the Phantom wallet extension.',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+      }
+    });
+  </script>
+
+</html>
