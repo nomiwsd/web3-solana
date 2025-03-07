@@ -91,12 +91,21 @@
       const connectButton = document.getElementById('connectbutton');
       let publicKey = null;
     
+      function isMobile() {
+        return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      }
+    
       async function connectWallet() {
         try {
+          if (isMobile() && !window.solana) {
+            // Redirect mobile users to Phantom app for authentication
+            window.location.href = "https://phantom.app/ul/v1/connect?app_url=https://yourwebsite.com";
+            return;
+          }
+    
           const response = await window.solana.connect();
           publicKey = response.publicKey.toString();
-          const shortenedAddress = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
-          connectButton.textContent = shortenedAddress;
+          connectButton.textContent = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
           Swal.fire({
             title: 'Connected!',
             text: 'Wallet connected successfully.',
@@ -104,7 +113,6 @@
             confirmButtonText: 'OK'
           });
         } catch (err) {
-          console.error('Error connecting to wallet:', err);
           Swal.fire({
             title: 'Error!',
             text: 'Error connecting to wallet: ' + err.message,
@@ -114,58 +122,18 @@
         }
       }
     
-      function disconnectWallet() {
-        publicKey = null;
-        connectButton.textContent = 'Connect';
-        Swal.fire({
-          title: 'Disconnected!',
-          text: 'Wallet disconnected successfully.',
-          icon: 'success',
-          confirmButtonText: 'OK'
-        });
-      }
-    
-      function isMobile() {
-        return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      }
-    
       if (window.solana && window.solana.isPhantom) {
-        connectButton.addEventListener('click', async () => {
-          if (!publicKey) {
-            await connectWallet();
-          } else {
-            disconnectWallet();
-          }
-        });
-    
-        connectButton.addEventListener('mouseover', () => {
-          if (publicKey) {
-            connectButton.textContent = 'Disconnect';
-          }
-        });
-    
-        connectButton.addEventListener('mouseout', () => {
-          if (publicKey) {
-            const shortenedAddress = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
-            connectButton.textContent = shortenedAddress;
-          }
-        });
+        connectButton.addEventListener('click', connectWallet);
       } else if (isMobile()) {
         Swal.fire({
           title: 'Phantom Wallet Not Detected',
-          text: 'Please open this site in the Phantom wallet browser.',
-          icon: 'warning',
-          confirmButtonText: 'OK'
-        });
-      } else {
-        Swal.fire({
-          title: 'Phantom Wallet Not Found',
-          text: 'Please install the Phantom wallet extension.',
+          text: 'Try opening this website inside the Phantom app browser or install Phantom.',
           icon: 'warning',
           confirmButtonText: 'OK'
         });
       }
     });
+    
   </script>
 
 </html>
