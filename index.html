@@ -88,24 +88,15 @@
   <script type="module" src="script.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const connectButton = document.getElementById('connectbutton');
+      const connectButton = document.getElementById('connectButton');
       let publicKey = null;
-    
-      function isMobile() {
-        return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      }
     
       async function connectWallet() {
         try {
-          if (isMobile() && !window.solana) {
-            // Redirect mobile users to Phantom app for authentication
-            window.location.href = "https://phantom.app/ul/v1/connect?app_url=https://sohaib110.github.io/web3-solana/";
-            return;
-          }
-    
           const response = await window.solana.connect();
           publicKey = response.publicKey.toString();
-          connectButton.textContent = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+          const shortenedAddress = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+          connectButton.textContent = shortenedAddress;
           Swal.fire({
             title: 'Connected!',
             text: 'Wallet connected successfully.',
@@ -113,6 +104,7 @@
             confirmButtonText: 'OK'
           });
         } catch (err) {
+          console.error('Error connecting to wallet:', err);
           Swal.fire({
             title: 'Error!',
             text: 'Error connecting to wallet: ' + err.message,
@@ -122,12 +114,42 @@
         }
       }
     
-      if (window.solana && window.solana.isPhantom) {
-        connectButton.addEventListener('click', connectWallet);
-      } else if (isMobile()) {
+      function disconnectWallet() {
+        publicKey = null;
+        connectButton.textContent = 'Connect Wallet';
         Swal.fire({
-          title: 'Phantom Wallet Not Detected',
-          text: 'Try opening this website inside the Phantom app browser or install Phantom.',
+          title: 'Disconnected!',
+          text: 'Wallet disconnected successfully.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+      }
+    
+      if (window.solana && window.solana.isPhantom) {
+        connectButton.addEventListener('click', async () => {
+          if (!publicKey) {
+            await connectWallet();
+          } else {
+            disconnectWallet();
+          }
+        });
+    
+        connectButton.addEventListener('mouseover', () => {
+          if (publicKey) {
+            connectButton.textContent = 'Disconnect';
+          }
+        });
+    
+        connectButton.addEventListener('mouseout', () => {
+          if (publicKey) {
+            const shortenedAddress = `${publicKey.slice(0, 4)}...${publicKey.slice(-4)}`;
+            connectButton.textContent = shortenedAddress;
+          }
+        });
+      } else {
+        Swal.fire({
+          title: 'Phantom Wallet Not Found',
+          text: 'Please install the Phantom wallet extension.',
           icon: 'warning',
           confirmButtonText: 'OK'
         });
